@@ -12,6 +12,9 @@ dependencies {
 	implementation("io.ktor:ktor-client-cio-jvm")
 	implementation("io.ktor:ktor-client-content-negotiation-jvm")
 
+	// tui
+	implementation("com.googlecode.lanterna:lanterna:3.1.2")
+
 	testImplementation(kotlin("test"))
 }
 

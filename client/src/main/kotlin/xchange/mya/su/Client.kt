@@ -1,43 +1,35 @@
 package xchange.mya.su
 
-import io.ktor.client.*
-import io.ktor.client.call.*
-import io.ktor.client.engine.cio.*
-import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.client.request.*
-import io.ktor.http.*
-import io.ktor.serialization.kotlinx.protobuf.*
-import kotlinx.coroutines.runBlocking
-import org.bouncycastle.crypto.generators.Ed25519KeyPairGenerator
-import org.bouncycastle.crypto.params.Ed25519KeyGenerationParameters
+import com.googlecode.lanterna.gui2.MultiWindowTextGUI
+import com.googlecode.lanterna.screen.TerminalScreen
+import com.googlecode.lanterna.terminal.DefaultTerminalFactory
+import org.bouncycastle.crypto.params.Ed25519PrivateKeyParameters
 import org.bouncycastle.crypto.params.Ed25519PublicKeyParameters
-import xchange.mya.su.request.client.ClientRegisterRequest
-import xchange.mya.su.response.client.ClientRegisterResponse
-import java.security.SecureRandom
+import org.bouncycastle.jce.provider.BouncyCastleProvider
+import xchange.mya.su.auth.authWindow
+import java.security.Security
 
-fun main() = runBlocking {
-	println("Hello World!")
+data class Client(
+	val id: Long,
+	val privateKey: Ed25519PrivateKeyParameters,
+	val publicKey: Ed25519PublicKeyParameters,
+)
 
-	val client = HttpClient(CIO) {
-		install(ContentNegotiation) {
-			protobuf()
-		}
+fun main() {
+	Security.addProvider(BouncyCastleProvider())
+	val api = Api()
+
+	val terminal = DefaultTerminalFactory().createTerminal()
+	val screen = TerminalScreen(terminal)
+	screen.cursorPosition = null
+	screen.startScreen()
+
+	val gui = MultiWindowTextGUI(screen)
+	val client = authWindow(gui, api)
+
+	if (client != null) {
+
 	}
 
-	val random = SecureRandom()
-	val generator = Ed25519KeyPairGenerator()
-	val parameters = Ed25519KeyGenerationParameters(random)
-
-	generator.init(parameters)
-	val keyPair = generator.generateKeyPair()
-	val publicKey = keyPair.public as Ed25519PublicKeyParameters
-
-	val request = ClientRegisterRequest(publicKey)
-	val response = client.post("http://localhost:8080/client/register") {
-		contentType(ContentType.Application.ProtoBuf)
-		setBody(request)
-	}
-
-	val message = response.body<ClientRegisterResponse>()
-	println(message)
+	screen.stopScreen()
 }
