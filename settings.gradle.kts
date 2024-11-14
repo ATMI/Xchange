@@ -4,3 +4,4 @@ plugins {
 rootProject.name = "Xchange"
 include("api")
 include("client")
+include("server")
