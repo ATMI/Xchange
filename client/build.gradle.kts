@@ -1,7 +1,3 @@
-plugins {
-	kotlin("jvm") version "1.9.23"
-}
-
 group = "xchng.mya.su"
 
 repositories {
@@ -10,6 +6,11 @@ repositories {
 
 dependencies {
 	implementation(project(":api"))
+
+	// ktor
+	implementation("io.ktor:ktor-client-core-jvm")
+	implementation("io.ktor:ktor-client-cio-jvm")
+	implementation("io.ktor:ktor-client-content-negotiation-jvm")
 
 	testImplementation(kotlin("test"))
 }

@@ -1,7 +1,3 @@
-plugins {
-	kotlin("jvm") version "1.9.23"
-}
-
 group = "xchng.mya.su"
 
 repositories {

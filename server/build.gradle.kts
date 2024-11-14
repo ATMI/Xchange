@@ -1,23 +1,24 @@
-plugins {
-    kotlin("jvm") version "1.9.23"
-}
-
 group = "xchng.mya.su"
 version = "1.0-SNAPSHOT"
 
 repositories {
-    mavenCentral()
+	mavenCentral()
 }
 
 dependencies {
-    implementation(project(":api"))
+	implementation(project(":api"))
 
-    testImplementation(kotlin("test"))
+	// ktor
+	implementation("io.ktor:ktor-server-core-jvm")
+	implementation("io.ktor:ktor-server-netty-jvm")
+	implementation("io.ktor:ktor-server-content-negotiation-jvm")
+
+	testImplementation(kotlin("test"))
 }
 
 tasks.test {
-    useJUnitPlatform()
+	useJUnitPlatform()
 }
 kotlin {
-    jvmToolchain(17)
+	jvmToolchain(17)
 }
