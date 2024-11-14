@@ -1,21 +1,17 @@
 package xchange.mya.su
 
 import io.ktor.server.application.*
-import io.ktor.server.engine.*
 import io.ktor.server.netty.*
-import xchange.mya.su.plugins.*
+import xchange.mya.su.plugins.configureDatabase
+import xchange.mya.su.plugins.configureRouting
+import xchange.mya.su.plugins.configureSerialization
 
-fun main() {
-	embeddedServer(
-		factory = Netty,
-		port = 8080,
-		host = "0.0.0.0",
-		module = Application::module
-	).start(wait = true)
+fun main(args: Array<String>) {
+	EngineMain.main(args)
 }
 
 fun Application.module() {
 	configureSerialization()
-//	configureDatabase()
+	configureDatabase()
 	configureRouting()
 }
