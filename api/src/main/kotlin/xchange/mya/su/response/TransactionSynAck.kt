@@ -1,4 +1,4 @@
-package xchange.mya.su.response.transaction
+package xchange.mya.su.response
 
 import kotlinx.serialization.Serializable
 

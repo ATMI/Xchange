@@ -1,4 +1,4 @@
-package xchange.mya.su.request.client
+package xchange.mya.su.request
 
 import kotlinx.serialization.Serializable
 import org.bouncycastle.crypto.params.Ed25519PublicKeyParameters

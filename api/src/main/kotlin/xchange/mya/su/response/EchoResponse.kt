@@ -1,4 +1,4 @@
-package xchange.mya.su.response.test
+package xchange.mya.su.response
 
 import kotlinx.serialization.Serializable
 

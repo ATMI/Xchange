@@ -5,8 +5,8 @@ import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import xchange.mya.su.request.test.EchoRequest
-import xchange.mya.su.response.test.EchoResponse
+import xchange.mya.su.request.EchoRequest
+import xchange.mya.su.response.EchoResponse
 
 fun Application.configureRouting() {
 	routing {

@@ -1,20 +1,17 @@
 package xchange.mya.su
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.bouncycastle.crypto.AsymmetricCipherKeyPair
 import org.bouncycastle.crypto.generators.Ed25519KeyPairGenerator
 import org.bouncycastle.crypto.params.Ed25519KeyGenerationParameters
 import org.bouncycastle.crypto.params.Ed25519PrivateKeyParameters
 import org.bouncycastle.crypto.params.Ed25519PublicKeyParameters
 import org.bouncycastle.util.io.pem.PemObject
-import org.bouncycastle.util.io.pem.PemReader
 import org.bouncycastle.util.io.pem.PemWriter
+import xchange.mya.su.entity.Client
 import java.io.File
-import java.security.KeyFactory
-import java.security.KeyPair
-import java.security.KeyPairGenerator
 import java.security.SecureRandom
-import java.security.spec.PKCS8EncodedKeySpec
-import java.security.spec.X509EncodedKeySpec
 
 object Keyguard {
 	private const val PRIVATE_KEY = "PRIVATE_KEY"
@@ -35,31 +32,54 @@ object Keyguard {
 		return appDir
 	}
 
-	private fun keyFile(): File {
-		val storage = keyStorage()
-		val keyFile = File(storage, "key.pem")
-		return keyFile
-	}
+	private fun loadKey(file: File) = runCatching {
+		val id = file.nameWithoutExtension.toLong()
+		val bytes = ByteArray(32)
 
-
-	fun load(): AsymmetricCipherKeyPair? {
-		val keyFile = keyFile()
-		if (!keyFile.exists()) {
-			return null
+		file.inputStream().use { stream ->
+			stream.read(bytes, 0, bytes.size)
 		}
-		return null
+
+		val key = Ed25519PrivateKeyParameters(bytes)
+		id to key
 	}
 
-	fun save(privateKey: Ed25519PrivateKeyParameters) {
-		val pemObject = PemObject(PRIVATE_KEY, privateKey.encoded)
-		val keyFile = keyFile()
+	suspend fun list(): List<Client> = withContext(Dispatchers.IO) {
+		val storage = keyStorage()
+		if (!storage.exists()) {
+			return@withContext emptyList()
+		}
 
-		val pemWriter = PemWriter(keyFile.writer())
-		pemWriter.writeObject(pemObject)
-		pemWriter.close()
+		val files = storage
+			.listFiles { path ->
+				path.extension == "xusr"
+			}
+			?.take(10)
+			?: return@withContext emptyList()
+
+		files
+			.mapNotNull { file ->
+				loadKey(file).getOrNull()
+			}
+			.map { (id, privateKey) ->
+				val publicKey = privateKey.generatePublicKey()
+				Client(
+					id = id,
+					privateKey = privateKey,
+					publicKey = publicKey,
+				)
+			}
 	}
 
-	fun createPair(): KeyPair {
+	suspend fun save(id: Long, key: Ed25519PrivateKeyParameters) = withContext(Dispatchers.IO) {
+		val storage = keyStorage()
+		val file = File(storage, "$id.xusr")
+
+		val bytes = key.encoded
+		file.writeBytes(bytes)
+	}
+
+	suspend fun createPair(): KeyPair = withContext(Dispatchers.IO) {
 		val random = SecureRandom()
 		val generator = Ed25519KeyPairGenerator()
 
@@ -69,6 +89,6 @@ object Keyguard {
 		val private = pair.private as Ed25519PrivateKeyParameters
 		val public = pair.public as Ed25519PublicKeyParameters
 
-		return KeyPair(private, public)
+		KeyPair(private, public)
 	}
 }

@@ -1,8 +1,8 @@
-CREATE OR REPLACE FUNCTION "select_balance"("client_id" INTEGER, "currency_id" INTEGER)
-	RETURNS INTEGER AS
+CREATE OR REPLACE FUNCTION "select_balance"("client_id" BIGINT, "currency_id" BIGINT)
+	RETURNS BIGINT AS
 $$
 DECLARE
-	"result" INTEGER;
+	"result" BIGINT;
 BEGIN
 	SELECT COALESCE(SUM(CASE WHEN "recipient" = "client_id" THEN "amount" ELSE 0 END), 0) -
 		   COALESCE(SUM(CASE WHEN "sender" = "client_id" THEN "amount" ELSE 0 END), 0)
@@ -18,7 +18,7 @@ CREATE OR REPLACE FUNCTION "transaction_positive_balance_trig_fn"()
 	RETURNS TRIGGER AS
 $$
 DECLARE
-	"transaction_balance" INTEGER;
+	"transaction_balance" BIGINT;
 BEGIN
 	IF "new"."sender" != 0 THEN
 		"transaction_balance" := "select_balance"("new"."sender", "new"."currency");

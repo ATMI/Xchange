@@ -9,10 +9,12 @@ import io.ktor.http.*
 import io.ktor.serialization.kotlinx.protobuf.*
 import org.bouncycastle.crypto.params.Ed25519PublicKeyParameters
 import xchange.mya.su.entity.Transaction
-import xchange.mya.su.request.client.ClientRegisterRequest
-import xchange.mya.su.request.transaction.TransactionAck
-import xchange.mya.su.response.client.ClientRegisterResponse
-import xchange.mya.su.response.transaction.TransactionSynAck
+import xchange.mya.su.request.ClientRegisterRequest
+import xchange.mya.su.request.TransactionAck
+import xchange.mya.su.response.ClientBalanceResponse
+import xchange.mya.su.response.ClientRegisterResponse
+import xchange.mya.su.response.TransactionHistoryResponse
+import xchange.mya.su.response.TransactionSynAck
 
 class Api {
 	private val http = HttpClient(CIO) {
@@ -21,7 +23,7 @@ class Api {
 		}
 	}
 
-	suspend fun register(key: Ed25519PublicKeyParameters): ClientRegisterResponse {
+	suspend fun clientRegister(key: Ed25519PublicKeyParameters): ClientRegisterResponse {
 		val request = ClientRegisterRequest(key)
 		val response = http.post("http://localhost:8080/client/register") {
 			contentType(ContentType.Application.ProtoBuf)
@@ -29,6 +31,12 @@ class Api {
 		}
 
 		val body = response.body<ClientRegisterResponse>()
+		return body
+	}
+
+	suspend fun clientBalance(id: Long): ClientBalanceResponse {
+		val response = http.get("http://localhost:8080/client/balance/$id")
+		val body = response.body<ClientBalanceResponse>()
 		return body
 	}
 
@@ -53,5 +61,11 @@ class Api {
 			contentType(ContentType.Application.ProtoBuf)
 			setBody(ack)
 		}
+	}
+
+	suspend fun transactionHistory(): TransactionHistoryResponse {
+		val response = http.get("http://localhost:8080/transaction/history")
+		val body = response.body<TransactionHistoryResponse>()
+		return body
 	}
 }
