@@ -1,17 +1,15 @@
 package xchange.mya.su.db.entity
 
-import org.bouncycastle.crypto.params.Ed25519PublicKeyParameters
 import org.jetbrains.exposed.dao.LongEntity
 import org.jetbrains.exposed.dao.LongEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.LongIdTable
-import org.jetbrains.exposed.sql.kotlin.datetime.CurrentDateTime
-import org.jetbrains.exposed.sql.kotlin.datetime.datetime
+import org.jetbrains.exposed.sql.kotlin.datetime.CurrentTimestamp
+import org.jetbrains.exposed.sql.kotlin.datetime.timestamp
 
 object ClientTable : LongIdTable("client") {
-	val publicKey = binary("public_key", Ed25519PublicKeyParameters.KEY_SIZE)
-	val registered = datetime("registered")
-		.defaultExpression(CurrentDateTime)
+	val publicKey = binary("public_key", 32)
+	val registered = timestamp("registered").defaultExpression(CurrentTimestamp)
 }
 
 class Client(id: EntityID<Long>) : LongEntity(id) {

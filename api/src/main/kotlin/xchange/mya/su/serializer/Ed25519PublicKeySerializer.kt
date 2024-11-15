@@ -13,7 +13,7 @@ import kotlinx.serialization.serializer
 import org.bouncycastle.crypto.params.Ed25519PublicKeyParameters
 
 object Ed25519PublicKeySerializer : KSerializer<Ed25519PublicKeyParameters> {
-	override val descriptor: SerialDescriptor = buildClassSerialDescriptor("Ed25519PublicKeyParameters") {
+	override val descriptor: SerialDescriptor = buildClassSerialDescriptor("Ed25519PublicKey") {
 		element<ByteArray>("encoded")
 	}
 
@@ -26,10 +26,12 @@ object Ed25519PublicKeySerializer : KSerializer<Ed25519PublicKeyParameters> {
 	override fun deserialize(decoder: Decoder): Ed25519PublicKeyParameters {
 		return decoder.decodeStructure(descriptor) {
 			val encoded: ByteArray
+
 			when (val index = decodeElementIndex(descriptor)) {
 				0 -> encoded = decodeSerializableElement(descriptor, 0, serializer<ByteArray>())
 				else -> throw SerializationException("Unknown index $index")
 			}
+
 			Ed25519PublicKeyParameters(encoded)
 		}
 	}

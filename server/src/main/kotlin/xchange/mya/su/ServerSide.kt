@@ -7,6 +7,8 @@ import xchange.mya.su.plugins.configureRouting
 import xchange.mya.su.plugins.configureSerialization
 
 fun main(args: Array<String>) {
+	// Workaround for Exposed Instant bug
+	System.setProperty("user.timezone", "UTC");
 	EngineMain.main(args)
 }
 

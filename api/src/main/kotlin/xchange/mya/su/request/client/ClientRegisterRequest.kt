@@ -7,5 +7,5 @@ import xchange.mya.su.serializer.Ed25519PublicKeySerializer
 @Serializable
 data class ClientRegisterRequest(
 	@Serializable(with = Ed25519PublicKeySerializer::class)
-	val publicKey: Ed25519PublicKeyParameters
+	val key: Ed25519PublicKeyParameters
 )
