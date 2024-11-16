@@ -5,35 +5,39 @@ import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import org.bouncycastle.crypto.params.Ed25519PublicKeyParameters
 import org.jetbrains.exposed.sql.Database
 import xchange.mya.su.db.schema.ClientSchema
+import xchange.mya.su.db.schema.CurrencySchema
 import xchange.mya.su.db.schema.TransactionSchema
-import xchange.mya.su.request.ClientRegisterRequest
 import xchange.mya.su.request.TransactionAck
-import xchange.mya.su.response.ClientBalanceResponse
-import xchange.mya.su.response.ClientRegisterResponse
-import xchange.mya.su.response.TransactionHistoryResponse
 import xchange.mya.su.response.TransactionSynAck
 
 fun Application.configureDatabase() {
 	val database = connectToPostgres()
 
 	val clientSchema = ClientSchema(database)
+	val currencySchema = CurrencySchema(database)
 	val transactionSchema = TransactionSchema(database)
 
 	routing {
 		post("/client/register") {
-			val request = call.receive<ClientRegisterRequest>()
-			val clientId = clientSchema.insert(request.key)
-			val response = ClientRegisterResponse(clientId.value)
-			call.respond(HttpStatusCode.Created, response)
+			val key = call.receive<Ed25519PublicKeyParameters>()
+			val clientId = clientSchema.insert(key)
+			call.respond(HttpStatusCode.Created, clientId.value)
 		}
 
 		get("/client/balance/{id}") {
 			val id = call.parameters["id"]!!.toLong()
 			val balance = transactionSchema.balance(id)
-			val response = ClientBalanceResponse(balance)
-			call.respond(HttpStatusCode.OK, response)
+			call.respond(HttpStatusCode.OK, balance)
+		}
+	}
+
+	routing {
+		get("/currency/list") {
+			val currencies = currencySchema.list()
+			call.respond(currencies)
 		}
 	}
 
@@ -56,8 +60,7 @@ fun Application.configureDatabase() {
 
 		get("/transaction/history") {
 			val transactions = transactionSchema.history()
-			val response = TransactionHistoryResponse(transactions)
-			call.respond(HttpStatusCode.OK, response)
+			call.respond(HttpStatusCode.OK, transactions)
 		}
 	}
 }

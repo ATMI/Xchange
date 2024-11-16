@@ -1,21 +1,19 @@
 package xchange.mya.su.db.schema
 
-import kotlinx.coroutines.Dispatchers
 import kotlinx.datetime.Instant
 import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.transactions.transaction
 import xchange.mya.su.db.entity.ClientTable
 import xchange.mya.su.db.entity.CurrencyTable
-import xchange.mya.su.db.entity.CurrencyTable.code
+import xchange.mya.su.db.entity.CurrencyTable.symbol
 import xchange.mya.su.db.entity.TransactionTable
 import xchange.mya.su.db.entity.TransactionTable.amount
 import xchange.mya.su.db.entity.TransactionTable.currency
 import xchange.mya.su.db.entity.TransactionTable.recipient
 import xchange.mya.su.db.entity.TransactionTable.sender
 import xchange.mya.su.request.TransactionAck
-import xchange.mya.su.response.BalanceItem
-import xchange.mya.su.response.TransactionHistoryItem
+import xchange.mya.su.response.CurrencyBalance
+import xchange.mya.su.response.TransactionRecord
 import java.sql.Timestamp
 
 class TransactionSchema(database: Database) {
@@ -53,31 +51,32 @@ class TransactionSchema(database: Database) {
 		}
 	}
 
-	suspend fun history(): List<TransactionHistoryItem> = dbQuery {
+	suspend fun history(): List<TransactionRecord> = dbQuery {
 		TransactionTable
 			.join(CurrencyTable, JoinType.INNER, currency, CurrencyTable.id)
-			.select(TransactionTable.id, sender, recipient, code, amount)
-			.limit(10)
+			.select(TransactionTable.id, sender, recipient, symbol, amount)
+			.orderBy(TransactionTable.id, SortOrder.DESC)
+			.limit(100)
 			.map { row ->
-				TransactionHistoryItem(
+				TransactionRecord(
 					row[TransactionTable.id].value,
 					row[sender],
 					row[recipient],
-					row[code],
+					row[symbol],
 					row[amount]
 				)
 			}
 	}
 
-	suspend fun balance(client: Long): List<BalanceItem> = dbQuery {
-		val items = mutableListOf<BalanceItem>()
+	suspend fun balance(client: Long): List<CurrencyBalance> = dbQuery {
+		val items = mutableListOf<CurrencyBalance>()
 		exec(
 			// TODO: group by: too many arguments
 			stmt = """
-			SELECT "currency"."code", "select_balance"(?, "currency"."id")
+			SELECT "currency".symbol, "select_balance"(?, "currency"."id")
 			FROM "transaction"
 		 		JOIN "currency" ON "transaction"."currency" = "currency"."id"
-			GROUP BY "currency"."code", "currency"."id";
+			GROUP BY "currency".symbol, "currency"."id";
 			""".trimIndent(),
 
 			args = listOf(
@@ -87,15 +86,9 @@ class TransactionSchema(database: Database) {
 			while (row.next()) {
 				val currency = row.getString(1)
 				val amount = row.getLong(2)
-				items += BalanceItem(currency, amount)
+				items += CurrencyBalance(currency, amount)
 			}
 		}
 		items
 	}
-
-
-	private suspend fun <T> dbQuery(block: suspend Transaction.() -> T): T =
-		newSuspendedTransaction(Dispatchers.IO) {
-			block()
-		}
 }

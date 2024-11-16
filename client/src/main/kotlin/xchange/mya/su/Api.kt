@@ -9,11 +9,10 @@ import io.ktor.http.*
 import io.ktor.serialization.kotlinx.protobuf.*
 import org.bouncycastle.crypto.params.Ed25519PublicKeyParameters
 import xchange.mya.su.entity.Transaction
-import xchange.mya.su.request.ClientRegisterRequest
 import xchange.mya.su.request.TransactionAck
-import xchange.mya.su.response.ClientBalanceResponse
-import xchange.mya.su.response.ClientRegisterResponse
-import xchange.mya.su.response.TransactionHistoryResponse
+import xchange.mya.su.response.CurrencySymbol
+import xchange.mya.su.response.CurrencyBalance
+import xchange.mya.su.response.TransactionRecord
 import xchange.mya.su.response.TransactionSynAck
 
 class Api {
@@ -23,20 +22,19 @@ class Api {
 		}
 	}
 
-	suspend fun clientRegister(key: Ed25519PublicKeyParameters): ClientRegisterResponse {
-		val request = ClientRegisterRequest(key)
+	suspend fun clientRegister(key: Ed25519PublicKeyParameters): Long {
 		val response = http.post("http://localhost:8080/client/register") {
 			contentType(ContentType.Application.ProtoBuf)
-			setBody(request)
+			setBody(key)
 		}
 
-		val body = response.body<ClientRegisterResponse>()
+		val body = response.body<Long>()
 		return body
 	}
 
-	suspend fun clientBalance(id: Long): ClientBalanceResponse {
+	suspend fun clientBalance(id: Long): List<CurrencyBalance> {
 		val response = http.get("http://localhost:8080/client/balance/$id")
-		val body = response.body<ClientBalanceResponse>()
+		val body = response.body<List<CurrencyBalance>>()
 		return body
 	}
 
@@ -63,9 +61,15 @@ class Api {
 		}
 	}
 
-	suspend fun transactionHistory(): TransactionHistoryResponse {
+	suspend fun transactionHistory(): List<TransactionRecord> {
 		val response = http.get("http://localhost:8080/transaction/history")
-		val body = response.body<TransactionHistoryResponse>()
+		val body = response.body<List<TransactionRecord>>()
+		return body
+	}
+
+	suspend fun currencyList(): List<CurrencySymbol> {
+		val response = http.get("http://localhost:8080/currency/list")
+		val body = response.body<List<CurrencySymbol>>()
 		return body
 	}
 }

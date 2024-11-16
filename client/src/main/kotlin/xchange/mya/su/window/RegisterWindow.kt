@@ -29,14 +29,14 @@ fun registerWindow(
 		val keys = Keyguard.createPair()
 		progressBar.value = 1
 
-		val registration = api.clientRegister(keys.public)
+		val id = api.clientRegister(keys.public)
 		progressBar.value = 2
 
-		Keyguard.save(registration.id, keys.private)
+		Keyguard.save(id, keys.private)
 		progressBar.value = 3
 
 		val result = Client(
-			id = registration.id,
+			id = id,
 			privateKey = keys.private,
 			publicKey = keys.public,
 		)

@@ -7,7 +7,7 @@ import org.jetbrains.exposed.dao.id.LongIdTable
 
 object CurrencyTable : LongIdTable() {
 	var name = varchar("name", 64)
-	var code = varchar("code", 4)
+	var symbol = varchar("symbol", 4)
 		.uniqueIndex()
 }
 
@@ -15,5 +15,5 @@ class Currency(id: EntityID<Long>) : LongEntity(id) {
 	companion object : LongEntityClass<Currency>(CurrencyTable)
 
 	var name by CurrencyTable.name
-	var code by CurrencyTable.code
+	var symbol by CurrencyTable.symbol
 }
