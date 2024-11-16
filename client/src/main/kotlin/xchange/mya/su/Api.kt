@@ -9,9 +9,10 @@ import io.ktor.http.*
 import io.ktor.serialization.kotlinx.protobuf.*
 import org.bouncycastle.crypto.params.Ed25519PublicKeyParameters
 import xchange.mya.su.entity.Transaction
+import xchange.mya.su.request.OrderRequest
 import xchange.mya.su.request.TransactionAck
-import xchange.mya.su.response.CurrencySymbol
 import xchange.mya.su.response.CurrencyBalance
+import xchange.mya.su.response.CurrencySymbol
 import xchange.mya.su.response.TransactionRecord
 import xchange.mya.su.response.TransactionSynAck
 
@@ -24,8 +25,8 @@ class Api {
 
 	suspend fun clientRegister(key: Ed25519PublicKeyParameters): Long {
 		val response = http.post("http://localhost:8080/client/register") {
-			contentType(ContentType.Application.ProtoBuf)
-			setBody(key)
+			contentType(ContentType.Application.OctetStream)
+			setBody(key.encoded)
 		}
 
 		val body = response.body<Long>()
@@ -71,5 +72,12 @@ class Api {
 		val response = http.get("http://localhost:8080/currency/list")
 		val body = response.body<List<CurrencySymbol>>()
 		return body
+	}
+
+	suspend fun orderCreate(order: OrderRequest) {
+		http.post("http://localhost:8080/order/create") {
+			contentType(ContentType.Application.ProtoBuf)
+			setBody(order)
+		}
 	}
 }

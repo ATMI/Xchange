@@ -15,7 +15,7 @@ class MainModel(
 ) {
 	private val scope = CoroutineScope(Dispatchers.IO)
 
-	private fun amountString(amount: Long) : String {
+	private fun amountString(amount: Long): String {
 		return "%8d.%02d".format(amount / 100, amount.absoluteValue % 100)
 	}
 
@@ -38,6 +38,7 @@ class MainModel(
 	fun loadBalance(table: TableModel<String>) = scope.launch(Dispatchers.IO) {
 		val balance = api.clientBalance(client.id)
 		ui.invokeAndWait {
+			table.clear()
 			for (i in balance) {
 				table.addRow(
 					i.currency,
@@ -54,15 +55,15 @@ class MainModel(
 
 fun mainMenu(
 	onTransaction: () -> Unit,
-	onExchange: () -> Unit,
+	onOrder: () -> Unit,
 ): Panel {
 	val panel = Panel(LinearLayout(Direction.HORIZONTAL))
 
 	val transactionButton = Button("Transaction", onTransaction)
-	val exchangeButton = Button("Exchange", onExchange)
+	val orderButton = Button("Order", onOrder)
 
 	panel.addComponent(transactionButton)
-	panel.addComponent(exchangeButton)
+	panel.addComponent(orderButton)
 
 	return panel
 }
@@ -100,9 +101,12 @@ fun mainWindow(
 		onTransaction = {
 			transactionWindow(gui, api, client)
 			model.loadTransactions(transactionTable.tableModel)
+			model.loadBalance(balanceTable.tableModel)
 		},
-		onExchange = {
-
+		onOrder = {
+			orderWindow(gui, api, client)
+			model.loadTransactions(transactionTable.tableModel)
+			model.loadBalance(balanceTable.tableModel)
 		},
 	)
 

@@ -12,35 +12,54 @@ import xchange.mya.su.component.addSeparator
 import xchange.mya.su.component.separator
 import xchange.mya.su.entity.Client
 import xchange.mya.su.entity.Transaction
+import xchange.mya.su.request.OrderRequest
 import xchange.mya.su.response.CurrencySymbol
 import java.util.regex.Pattern
 
-class TransactionModel(
+/*enum class OrderType {
+	Buy,
+	Sell;
+
+	override fun toString(): String {
+		return when (this) {
+			Buy -> "Buy"
+			Sell -> "Sell"
+		}
+	}
+}*/
+
+class OrderModel(
 	private val ui: TextGUIThread,
 	private val api: Api,
 	private val client: Client,
 ) {
 	private val scope = CoroutineScope(Dispatchers.IO)
 
-	fun loadCurrencyList(comboBox: ComboBox<CurrencySymbol>) = scope.launch(Dispatchers.IO) {
+	fun loadCurrencyList(vararg comboBox: ComboBox<CurrencySymbol>) = scope.launch(Dispatchers.IO) {
 		val currencyList = api.currencyList()
 		ui.invokeAndWait {
-			comboBox.clearItems()
+			comboBox.forEach {
+				it.clearItems()
+			}
+
 			for (i in currencyList) {
-				comboBox.addItem(i)
+				comboBox.forEach {
+					it.addItem(i)
+				}
 			}
 		}
 	}
 
-	fun transact(
+	fun order(
 		progressBar: ProgressBar,
-		currency: CurrencySymbol?,
-		recipientValue: String,
+		base: CurrencySymbol?,
+		quote: CurrencySymbol?,
 		amountValue: String,
+		rateValue: String,
 		onDone: () -> Unit,
 	) = scope.launch(Dispatchers.IO) {
-		val recipient = recipientValue.toLong()
 		val amount = amountValue.toMoney()
+		val rate = rateValue.toMoney()
 		progressBar.value++
 
 		val synAck = api.transactionSyn()
@@ -49,57 +68,66 @@ class TransactionModel(
 		val transaction = Transaction(
 			synAck.id,
 			client.id,
-			recipient,
-			currency!!.id,
+			0,
+			base!!.id,
 			amount,
-			synAck.timestamp,
+			synAck.timestamp
 		)
-
 		transaction.sign(client.privateKey)
 		progressBar.value++
 
-		api.transactionAck(transaction)
+		val order = OrderRequest(
+			synAck.id,
+			client.id,
+			base.id,
+			quote!!.id,
+			amount,
+			rate,
+			synAck.timestamp,
+			transaction.signature!!,
+		)
+		api.orderCreate(order)
 		progressBar.value++
 
 		ui.invokeAndWait(onDone)
 	}
 }
 
-fun transactionWindow(
+fun orderWindow(
 	gui: MultiWindowTextGUI,
 	api: Api,
 	client: Client,
 ) {
-	val model = TransactionModel(gui.guiThread, api, client)
-	val window = BasicWindow("Transaction")
+	val model = OrderModel(gui.guiThread, api, client)
+	val window = BasicWindow("Order")
 	val panel = Panel(GridLayout(2))
 
 	panel.addSeparator()
 
-	Label("Sender").addTo(panel)
-	Label(client.id.toString())
+	Label("Base").addTo(panel)
+	val baseValue = ComboBox<CurrencySymbol>()
 		.setLayoutData(GridLayout.createHorizontallyEndAlignedLayoutData(1))
 		.addTo(panel)
 
 	panel.addSeparator()
 
-	Label("Recipient").addTo(panel)
-	val recipientValue = TextBox()
-		.setValidationPattern(Pattern.compile("\\d+"))
-		.addTo(panel)
-
-	panel.addSeparator()
-
-	Label("Currency").addTo(panel)
-	val currencyValue = ComboBox<CurrencySymbol>()
+	Label("Quote").addTo(panel)
+	val quoteValue = ComboBox<CurrencySymbol>()
 		.setLayoutData(GridLayout.createHorizontallyEndAlignedLayoutData(1))
 		.addTo(panel)
-	model.loadCurrencyList(currencyValue)
 
+	model.loadCurrencyList(baseValue, quoteValue)
 	panel.addSeparator()
 
 	Label("Amount").addTo(panel)
 	val amountValue = TextBox()
+		.setValidationPattern(Pattern.compile(Money.PATTERN))
+		.addTo(panel)
+
+	panel.addSeparator()
+
+	Label("Rate").addTo(panel)
+	val rateValue = TextBox()
 		.setValidationPattern(Pattern.compile(Money.PATTERN))
 		.addTo(panel)
 
@@ -111,9 +139,10 @@ fun transactionWindow(
 	}.addTo(buttons)
 
 	Button(MessageDialogButton.OK.toString()) {
-		val currency = currencyValue.selectedItem
-		val recipient = recipientValue.text
+		val base = baseValue.selectedItem
+		val quote = quoteValue.selectedItem
 		val amount = amountValue.text
+		val rate = rateValue.text
 
 		val progressSeparator = separator()
 		val progressBar = ProgressBar(0, 4)
@@ -122,10 +151,11 @@ fun transactionWindow(
 		panel.addComponent(13, progressBar)
 		panel.addComponent(14, progressSeparator)
 
-		model.transact(progressBar, currency, recipient, amount) {
-			recipientValue.isEnabled = false
-			currencyValue.isEnabled = false
+		model.order(progressBar, base, quote, amount, rate) {
+			baseValue.isEnabled = false
+			quoteValue.isEnabled = false
 			amountValue.isEnabled = false
+			rateValue.isEnabled = false
 
 			buttons.removeAllComponents()
 			Button(MessageDialogButton.Close.toString()) {

@@ -3,9 +3,9 @@ package xchange.mya.su.db.schema
 import kotlinx.datetime.Instant
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
-import xchange.mya.su.db.entity.ClientTable
 import xchange.mya.su.db.entity.CurrencyTable
 import xchange.mya.su.db.entity.CurrencyTable.symbol
+import xchange.mya.su.db.entity.OrderTransactionTable
 import xchange.mya.su.db.entity.TransactionTable
 import xchange.mya.su.db.entity.TransactionTable.amount
 import xchange.mya.su.db.entity.TransactionTable.currency
@@ -20,9 +20,8 @@ class TransactionSchema(database: Database) {
 
 	init {
 		transaction(database) {
-			SchemaUtils.create(ClientTable)
-			SchemaUtils.create(CurrencyTable)
 			SchemaUtils.create(TransactionTable)
+			SchemaUtils.create(OrderTransactionTable)
 		}
 	}
 

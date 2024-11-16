@@ -20,7 +20,7 @@ object TransactionTable : LongIdTable("transaction") {
 		}
 
 	val currency = long("currency")
-		.references(CurrencyTable.id, ReferenceOption.RESTRICT, ReferenceOption.CASCADE)
+		.references(CurrencyTable.id, ReferenceOption.RESTRICT, ReferenceOption.RESTRICT)
 		.index()
 
 	val amount = long("amount")
