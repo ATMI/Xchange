@@ -77,10 +77,6 @@ class TransactionModel(
 	}
 }
 
-private fun progressWindow() {
-
-}
-
 fun transactionWindow(
 	gui: MultiWindowTextGUI,
 	api: Api,
