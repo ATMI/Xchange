@@ -14,7 +14,6 @@ data class Transaction(
 ) {
 	fun sign(key: Ed25519PrivateKeyParameters) {
 		val str = "[$id, $timestamp] $sender -> $recipient: $amount $$currency"
-		println(str)
 		val data = str.toByteArray()
 
 		val signer = Ed25519Signer()

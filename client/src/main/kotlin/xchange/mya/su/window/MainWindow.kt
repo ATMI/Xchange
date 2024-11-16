@@ -3,12 +3,10 @@ package xchange.mya.su.window
 import com.googlecode.lanterna.gui2.*
 import com.googlecode.lanterna.gui2.table.Table
 import com.googlecode.lanterna.gui2.table.TableModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import xchange.mya.su.Api
 import xchange.mya.su.entity.Client
+import kotlin.math.absoluteValue
 
 class MainModel(
 	private val ui: TextGUIThread,
@@ -17,16 +15,21 @@ class MainModel(
 ) {
 	private val scope = CoroutineScope(Dispatchers.IO)
 
+	private fun amountString(amount: Long) : String {
+		return "%8d.%02d".format(amount / 100, amount.absoluteValue % 100)
+	}
+
 	fun loadTransactions(table: TableModel<String>) = scope.launch(Dispatchers.IO) {
 		val history = api.transactionHistory()
 		ui.invokeAndWait {
+			table.clear()
 			for (i in history) {
 				table.addRow(
 					i.id.toString(),
 					i.sender.toString(),
 					i.recipient.toString(),
 					i.currency,
-					i.amount.toString(),
+					amountString(i.amount),
 				)
 			}
 		}
@@ -38,7 +41,7 @@ class MainModel(
 			for (i in balance) {
 				table.addRow(
 					i.currency,
-					i.amount.toString(),
+					amountString(i.amount),
 				)
 			}
 		}
@@ -96,6 +99,7 @@ fun mainWindow(
 	val menu = mainMenu(
 		onTransaction = {
 			transactionWindow(gui, api, client)
+			model.loadTransactions(transactionTable.tableModel)
 		},
 		onExchange = {
 

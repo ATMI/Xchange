@@ -37,7 +37,7 @@ class TransactionModel(
 	) = scope.launch(Dispatchers.IO) {
 		val recipient = recipientValue.toLong()
 
-		val pattern = Pattern.compile("(\\d*)\\.?(\\d*)")
+		val pattern = Pattern.compile("^(\\d*)\\.?(\\d{0,2})\$")
 		val match = pattern.matcher(amountValue)
 		if (!match.find()) {
 			return@launch
@@ -47,8 +47,12 @@ class TransactionModel(
 		val wholeGroup = match.group(1)
 		val centsGroup = match.group(2)
 
-		val whole = if (wholeGroup.isNullOrBlank()) 0 else wholeGroup.toLong()
-		val cents = if (centsGroup.isNullOrBlank()) 0 else centsGroup.toLong()
+		val whole = wholeGroup.toLongOrNull() ?: 0
+		var cents = centsGroup.toLongOrNull() ?: 0
+
+		if (cents > 0 && centsGroup.length == 1) {
+			cents *= 10
+		}
 		val amount = 100 * whole + cents
 
 		val synAck = api.transactionSyn()
@@ -121,7 +125,7 @@ fun transactionWindow(
 
 	Label("Amount").addTo(panel)
 	val amountValue = TextBox()
-		.setValidationPattern(Pattern.compile("\\d*\\.?\\d{0,2}"))
+		.setValidationPattern(Pattern.compile("^\\d*\\.?\\d{0,2}$"))
 		.addTo(panel)
 
 	addSeparator()
