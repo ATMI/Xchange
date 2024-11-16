@@ -88,34 +88,11 @@ fun mainWindow(
 	val model = MainModel(gui.guiThread, api, client)
 
 	val window = BasicWindow()
-	val panel = Panel(GridLayout(2))
+	val panel = Panel(LinearLayout(Direction.VERTICAL))
+	val content = Panel(GridLayout(2))
 
-	val leftPanel = Panel()
-	val rightPanel = Panel()
-
-	// left panel
-	transactionTable(model).addTo(leftPanel)
-	leftPanel.setLayoutData(
-		GridLayout.createLayoutData(
-			GridLayout.Alignment.FILL,
-			GridLayout.Alignment.FILL,
-			true,
-			false,
-		)
-	)
-
-	// right panel
-	balanceTable(model).addTo(rightPanel)
-	rightPanel.setLayoutData(
-		GridLayout.createLayoutData(
-			GridLayout.Alignment.FILL,
-			GridLayout.Alignment.FILL,
-			true,
-			true,
-		)
-	)
-
-	// menu panel
+	val transactionTable = transactionTable(model)
+	val balanceTable = balanceTable(model)
 	val menu = mainMenu(
 		onTransaction = {
 			transactionWindow(gui, api, client)
@@ -124,28 +101,33 @@ fun mainWindow(
 
 		},
 	)
-	menu.setLayoutData(
+
+	transactionTable.setLayoutData(
 		GridLayout.createLayoutData(
-			GridLayout.Alignment.END,
-			GridLayout.Alignment.END,
+			GridLayout.Alignment.FILL,
+			GridLayout.Alignment.FILL,
 			true,
-			false,
-			2,
-			1,
+			true
 		)
 	)
+	balanceTable.setLayoutData(
+		GridLayout.createLayoutData(
+			GridLayout.Alignment.FILL,
+			GridLayout.Alignment.BEGINNING,
+			false,
+			false,
+		)
+	)
+	content.addComponent(transactionTable.withBorder(Borders.singleLine("Transactions")))
+	content.addComponent(balanceTable.withBorder(Borders.singleLine("Balance")))
 
-	leftPanel
-		.withBorder(Borders.singleLine("Transactions"))
-		.addTo(panel)
-
-	rightPanel
-		.withBorder(Borders.singleLine("Balance"))
-		.addTo(panel)
-
-	menu.addTo(panel)
+	content.setLayoutData(LinearLayout.createLayoutData(LinearLayout.Alignment.Fill, LinearLayout.GrowPolicy.CanGrow))
+	menu.setLayoutData(LinearLayout.createLayoutData(LinearLayout.Alignment.End, LinearLayout.GrowPolicy.None))
+	panel.addComponent(content)
+	panel.addComponent(menu)
 
 	window.setHints(arrayListOf(Window.Hint.EXPANDED))
+	window.setCloseWindowWithEscape(true)
 	window.component = panel
 
 	gui.addWindowAndWait(window)
