@@ -11,22 +11,26 @@ import xchange.mya.su.entity.Client
 fun loginWindow(
 	gui: WindowBasedTextGUI,
 	onRegister: () -> Client?,
-): Client? {
+	onLogin: (Client) -> Unit,
+) {
 	val clients = runBlocking { Keyguard.list() }
 	val listBox = ActionListBox()
 	val window = BasicWindow()
 
-	var selected: Client? = null
+//	var selected: Client? = null
 	for (client in clients) {
 		listBox.addItem("${client.id}") {
-			window.close()
-			selected = client
+//			window.close()
+			onLogin(client)
 		}
 	}
 
 	listBox.addItem("New...") {
-		window.close()
-		selected = onRegister()
+//		window.close()
+		val client = onRegister()
+		if (client != null) {
+			onLogin(client)
+		}
 	}
 
 	window.setHints(arrayListOf(Window.Hint.CENTERED))
@@ -34,5 +38,5 @@ fun loginWindow(
 	window.title = "Account"
 
 	gui.addWindowAndWait(window)
-	return selected
+//	return selected
 }

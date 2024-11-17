@@ -21,15 +21,14 @@ fun main() {
 	val api = Api()
 	val gui = MultiWindowTextGUI(screen)
 
-	val client = loginWindow(gui) {
-		registerWindow(gui, api)
-	}
-
-	if (client == null) {
-		screen.stopScreen()
-		return
-	}
-
-	mainWindow(gui, api, client)
+	loginWindow(
+		gui,
+		onRegister = {
+			registerWindow(gui, api)
+		},
+		onLogin = { client ->
+			mainWindow(gui, api, client)
+		}
+	)
 	screen.stopScreen()
 }

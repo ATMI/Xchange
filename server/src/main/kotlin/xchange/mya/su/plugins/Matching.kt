@@ -187,12 +187,12 @@ private suspend fun Application.loadKey() = withContext(Dispatchers.IO) {
 }
 
 fun Application.configureMatching() {
-	GlobalScope.launch {
+	GlobalScope.launch(Dispatchers.IO) {
 		TimeZone.setDefault(TimeZone.getTimeZone("UTC"))
 		val key = loadKey()
 
 		while (true) {
-			delay(5000)
+			delay(1000)
 
 			val currencies = selectCurrencies()
 			currencies?.forEach { pair ->
