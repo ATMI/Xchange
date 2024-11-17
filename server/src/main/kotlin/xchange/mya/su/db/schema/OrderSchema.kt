@@ -23,7 +23,7 @@ class OrderSchema(database: Database) {
 			it[sender] = orderReq.client
 			it[recipient] = 0
 			it[currency] = orderReq.base
-			it[amount] = orderReq.amount
+			it[amount] = orderReq.amount * orderReq.rate / 100
 			it[timestamp] = Instant.fromEpochMilliseconds(orderReq.timestamp)
 			it[signature] = orderReq.signature
 		}

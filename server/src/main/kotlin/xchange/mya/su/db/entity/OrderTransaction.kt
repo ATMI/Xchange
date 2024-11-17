@@ -1,15 +1,22 @@
 package xchange.mya.su.db.entity
 
+import org.jetbrains.exposed.dao.LongEntity
+import org.jetbrains.exposed.dao.LongEntityClass
+import org.jetbrains.exposed.dao.id.EntityID
+import org.jetbrains.exposed.dao.id.LongIdTable
 import org.jetbrains.exposed.sql.ReferenceOption
-import org.jetbrains.exposed.sql.Table
 
-object OrderTransactionTable : Table("order_transaction") {
+object OrderTransactionTable : LongIdTable("order_transaction") {
 	val order = long("order")
 		.references(OrderTable.id, ReferenceOption.RESTRICT, ReferenceOption.RESTRICT)
 
 	val transaction = long("transaction")
 		.references(TransactionTable.id, ReferenceOption.RESTRICT, ReferenceOption.RESTRICT)
+}
 
-	override val primaryKey: PrimaryKey
-		get() = PrimaryKey(order, transaction)
+class OrderTransaction(id: EntityID<Long>) : LongEntity(id) {
+	companion object : LongEntityClass<OrderTransaction>(OrderTransactionTable)
+
+	var order by OrderTransactionTable.order
+	var transaction by OrderTransactionTable.transaction
 }

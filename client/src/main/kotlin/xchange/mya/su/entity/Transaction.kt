@@ -1,7 +1,7 @@
 package xchange.mya.su.entity
 
 import org.bouncycastle.crypto.params.Ed25519PrivateKeyParameters
-import org.bouncycastle.crypto.signers.Ed25519Signer
+import xchange.mya.su.signature.TransactionSigner
 
 data class Transaction(
 	val id: Long,
@@ -13,13 +13,6 @@ data class Transaction(
 	var signature: ByteArray? = null,
 ) {
 	fun sign(key: Ed25519PrivateKeyParameters) {
-		val str = "[$id, $timestamp] $sender -> $recipient: $amount $$currency"
-		val data = str.toByteArray()
-
-		val signer = Ed25519Signer()
-		signer.init(true, key)
-		signer.update(data, 0, data.size)
-
-		signature = signer.generateSignature()
+		signature = TransactionSigner.sign(key, id, sender, recipient, currency, amount, timestamp)
 	}
 }

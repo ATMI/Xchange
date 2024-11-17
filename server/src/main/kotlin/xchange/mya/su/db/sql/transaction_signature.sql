@@ -13,9 +13,9 @@ BEGIN
 	END IF;
 
 	"data" := format(
-		'[%s, %s] %s -> %s: %s $%s',
+		'[%s] %s -> %s: %s $%s',
 		"transaction"."id",
-		(EXTRACT(EPOCH FROM "transaction"."timestamp") * 1000)::bigint,
+-- 		(EXTRACT(EPOCH FROM "transaction"."timestamp") * 1000)::bigint,
 		"transaction"."sender",
 		"transaction"."recipient",
 		"transaction"."amount",

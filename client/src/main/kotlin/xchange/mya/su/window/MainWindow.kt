@@ -20,30 +20,36 @@ class MainModel(
 	}
 
 	fun loadTransactions(table: TableModel<String>) = scope.launch(Dispatchers.IO) {
-		val history = api.transactionHistory()
-		ui.invokeAndWait {
-			table.clear()
-			for (i in history) {
-				table.addRow(
-					i.id.toString(),
-					i.sender.toString(),
-					i.recipient.toString(),
-					i.currency,
-					amountString(i.amount),
-				)
+		while (true) {
+			delay(1000)
+			val history = api.transactionHistory(client.id)
+			ui.invokeAndWait {
+				table.clear()
+				for (i in history) {
+					table.addRow(
+						i.id.toString(),
+						i.sender.toString(),
+						i.recipient.toString(),
+						i.currency,
+						amountString(i.amount),
+					)
+				}
 			}
 		}
 	}
 
 	fun loadBalance(table: TableModel<String>) = scope.launch(Dispatchers.IO) {
-		val balance = api.clientBalance(client.id)
-		ui.invokeAndWait {
-			table.clear()
-			for (i in balance) {
-				table.addRow(
-					i.currency,
-					amountString(i.amount),
-				)
+		while (true) {
+			delay(1000)
+			val balance = api.clientBalance(client.id)
+			ui.invokeAndWait {
+				table.clear()
+				for (i in balance) {
+					table.addRow(
+						i.currency,
+						amountString(i.amount),
+					)
+				}
 			}
 		}
 	}
@@ -100,13 +106,9 @@ fun mainWindow(
 	val menu = mainMenu(
 		onTransaction = {
 			transactionWindow(gui, api, client)
-			model.loadTransactions(transactionTable.tableModel)
-			model.loadBalance(balanceTable.tableModel)
 		},
 		onOrder = {
 			orderWindow(gui, api, client)
-			model.loadTransactions(transactionTable.tableModel)
-			model.loadBalance(balanceTable.tableModel)
 		},
 	)
 

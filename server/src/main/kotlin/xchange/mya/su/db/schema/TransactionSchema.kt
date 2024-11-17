@@ -50,10 +50,13 @@ class TransactionSchema(database: Database) {
 		}
 	}
 
-	suspend fun history(): List<TransactionRecord> = dbQuery {
+	suspend fun history(client: Long): List<TransactionRecord> = dbQuery {
 		TransactionTable
 			.join(CurrencyTable, JoinType.INNER, currency, CurrencyTable.id)
 			.select(TransactionTable.id, sender, recipient, symbol, amount)
+			.where {
+				(sender eq client) or (recipient eq client)
+			}
 			.orderBy(TransactionTable.id, SortOrder.DESC)
 			.limit(100)
 			.map { row ->

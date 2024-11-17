@@ -72,38 +72,35 @@ fun transactionWindow(
 ) {
 	val model = TransactionModel(gui.guiThread, api, client)
 	val window = BasicWindow("Transaction")
-	val panel = Panel(GridLayout(2))
+	val panel = Panel(GridLayout(3))
 
-	panel.addSeparator()
+	panel.addSeparator(3)
 
 	Label("Sender").addTo(panel)
 	Label(client.id.toString())
-		.setLayoutData(GridLayout.createHorizontallyEndAlignedLayoutData(1))
+		.setLayoutData(GridLayout.createHorizontallyEndAlignedLayoutData(2))
 		.addTo(panel)
 
-	panel.addSeparator()
+	panel.addSeparator(3)
 
 	Label("Recipient").addTo(panel)
 	val recipientValue = TextBox()
+		.setLayoutData(GridLayout.createHorizontallyEndAlignedLayoutData(2))
 		.setValidationPattern(Pattern.compile("\\d+"))
 		.addTo(panel)
 
-	panel.addSeparator()
-
-	Label("Currency").addTo(panel)
-	val currencyValue = ComboBox<CurrencySymbol>()
-		.setLayoutData(GridLayout.createHorizontallyEndAlignedLayoutData(1))
-		.addTo(panel)
-	model.loadCurrencyList(currencyValue)
-
-	panel.addSeparator()
+	panel.addSeparator(3)
 
 	Label("Amount").addTo(panel)
 	val amountValue = TextBox()
 		.setValidationPattern(Pattern.compile(Money.PATTERN))
 		.addTo(panel)
+	val currencyValue = ComboBox<CurrencySymbol>()
+		.setLayoutData(GridLayout.createHorizontallyEndAlignedLayoutData(1))
+		.addTo(panel)
+	model.loadCurrencyList(currencyValue)
 
-	panel.addSeparator()
+	panel.addSeparator(3)
 
 	val buttons = Panel(LinearLayout(Direction.HORIZONTAL))
 	Button(MessageDialogButton.Cancel.toString()) {
@@ -115,12 +112,12 @@ fun transactionWindow(
 		val recipient = recipientValue.text
 		val amount = amountValue.text
 
-		val progressSeparator = separator()
+		val progressSeparator = separator(3)
 		val progressBar = ProgressBar(0, 4)
-			.setLayoutData(GridLayout.createHorizontallyFilledLayoutData(2))
+			.setLayoutData(GridLayout.createHorizontallyFilledLayoutData(3))
 
-		panel.addComponent(13, progressBar)
-		panel.addComponent(14, progressSeparator)
+		panel.addComponent(11, progressBar)
+		panel.addComponent(12, progressSeparator)
 
 		model.transact(progressBar, currency, recipient, amount) {
 			recipientValue.isEnabled = false
@@ -139,7 +136,7 @@ fun transactionWindow(
 	}.addTo(buttons)
 
 	buttons
-		.setLayoutData(GridLayout.createHorizontallyEndAlignedLayoutData(2))
+		.setLayoutData(GridLayout.createHorizontallyEndAlignedLayoutData(3))
 		.addTo(panel)
 
 	window.component = panel

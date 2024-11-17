@@ -62,8 +62,8 @@ class Api {
 		}
 	}
 
-	suspend fun transactionHistory(): List<TransactionRecord> {
-		val response = http.get("http://localhost:8080/transaction/history")
+	suspend fun transactionHistory(id: Long): List<TransactionRecord> {
+		val response = http.get("http://localhost:8080/transaction/history/$id")
 		val body = response.body<List<TransactionRecord>>()
 		return body
 	}

@@ -62,8 +62,9 @@ fun Application.configureDatabase() {
 			call.respond(HttpStatusCode.OK)
 		}
 
-		get("/transaction/history") {
-			val transactions = transactionSchema.history()
+		get("/transaction/history/{id}") {
+			val id = call.parameters["id"]!!.toLong()
+			val transactions = transactionSchema.history(id)
 			call.respond(HttpStatusCode.OK, transactions)
 		}
 	}

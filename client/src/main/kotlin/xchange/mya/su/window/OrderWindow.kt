@@ -70,7 +70,7 @@ class OrderModel(
 			client.id,
 			0,
 			base!!.id,
-			amount,
+			amount * rate / 100,
 			synAck.timestamp
 		)
 		transaction.sign(client.privateKey)
@@ -100,38 +100,35 @@ fun orderWindow(
 ) {
 	val model = OrderModel(gui.guiThread, api, client)
 	val window = BasicWindow("Order")
-	val panel = Panel(GridLayout(2))
+	val panel = Panel(GridLayout(3))
 
-	panel.addSeparator()
-
-	Label("Base").addTo(panel)
-	val baseValue = ComboBox<CurrencySymbol>()
-		.setLayoutData(GridLayout.createHorizontallyEndAlignedLayoutData(1))
-		.addTo(panel)
-
-	panel.addSeparator()
-
-	Label("Quote").addTo(panel)
-	val quoteValue = ComboBox<CurrencySymbol>()
-		.setLayoutData(GridLayout.createHorizontallyEndAlignedLayoutData(1))
-		.addTo(panel)
-
-	model.loadCurrencyList(baseValue, quoteValue)
-	panel.addSeparator()
+	panel.addSeparator(3)
 
 	Label("Amount").addTo(panel)
 	val amountValue = TextBox()
 		.setValidationPattern(Pattern.compile(Money.PATTERN))
 		.addTo(panel)
+	val quoteValue = ComboBox<CurrencySymbol>()
+		.setLayoutData(GridLayout.createHorizontallyEndAlignedLayoutData(2))
+		.addTo(panel)
 
-	panel.addSeparator()
+	panel.addSeparator(3)
 
-	Label("Rate").addTo(panel)
+	val quoteLabel = Label("").addTo(panel)
 	val rateValue = TextBox()
 		.setValidationPattern(Pattern.compile(Money.PATTERN))
 		.addTo(panel)
+	val baseValue = ComboBox<CurrencySymbol>()
+		.setLayoutData(GridLayout.createHorizontallyEndAlignedLayoutData(1))
+		.addTo(panel)
 
-	panel.addSeparator()
+	model.loadCurrencyList(baseValue, quoteValue)
+	panel.addSeparator(3)
+
+	val rateListener = ComboBox.Listener { _, _, _ ->
+		quoteLabel.text = "1 ${quoteValue.selectedItem} = "
+	}
+	quoteValue.addListener(rateListener)
 
 	val buttons = Panel(LinearLayout(Direction.HORIZONTAL))
 	Button(MessageDialogButton.Cancel.toString()) {
@@ -144,12 +141,12 @@ fun orderWindow(
 		val amount = amountValue.text
 		val rate = rateValue.text
 
-		val progressSeparator = separator()
+		val progressSeparator = separator(3)
 		val progressBar = ProgressBar(0, 4)
-			.setLayoutData(GridLayout.createHorizontallyFilledLayoutData(2))
+			.setLayoutData(GridLayout.createHorizontallyFilledLayoutData(3))
 
-		panel.addComponent(13, progressBar)
-		panel.addComponent(14, progressSeparator)
+		panel.addComponent(9, progressBar)
+		panel.addComponent(10, progressSeparator)
 
 		model.order(progressBar, base, quote, amount, rate) {
 			baseValue.isEnabled = false
@@ -169,7 +166,7 @@ fun orderWindow(
 	}.addTo(buttons)
 
 	buttons
-		.setLayoutData(GridLayout.createHorizontallyEndAlignedLayoutData(2))
+		.setLayoutData(GridLayout.createHorizontallyEndAlignedLayoutData(3))
 		.addTo(panel)
 
 	window.component = panel

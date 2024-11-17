@@ -5,11 +5,11 @@ import com.googlecode.lanterna.gui2.GridLayout
 import com.googlecode.lanterna.gui2.Panel
 import com.googlecode.lanterna.gui2.Separator
 
-fun separator(): Separator {
+fun separator(span: Int): Separator {
 	return Separator(Direction.HORIZONTAL)
-		.setLayoutData(GridLayout.createHorizontallyFilledLayoutData(2))
+		.setLayoutData(GridLayout.createHorizontallyFilledLayoutData(span))
 }
 
-fun Panel.addSeparator() {
-	separator().addTo(this)
+fun Panel.addSeparator(span: Int) {
+	separator(span).addTo(this)
 }

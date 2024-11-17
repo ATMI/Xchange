@@ -35,10 +35,10 @@ object TransactionTable : LongIdTable("transaction") {
 class Transaction(id: EntityID<Long>) : LongEntity(id) {
 	companion object : LongEntityClass<Transaction>(TransactionTable)
 
-	val sender by TransactionTable.sender
-	val recipient by TransactionTable.recipient
-	val currency by TransactionTable.currency
-	val amount by TransactionTable.amount
-	val timestamp by TransactionTable.timestamp
-	val signature by TransactionTable.signature
+	var sender by TransactionTable.sender
+	var recipient by TransactionTable.recipient
+	var currency by TransactionTable.currency
+	var amount by TransactionTable.amount
+	var timestamp by TransactionTable.timestamp
+	var signature by TransactionTable.signature
 }
