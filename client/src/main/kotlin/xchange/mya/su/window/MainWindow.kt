@@ -21,7 +21,6 @@ class MainModel(
 
 	fun loadTransactions(table: TableModel<String>) = scope.launch(Dispatchers.IO) {
 		while (true) {
-			delay(1000)
 			val history = api.transactionHistory(client.id)
 			ui.invokeAndWait {
 				table.clear()
@@ -35,12 +34,12 @@ class MainModel(
 					)
 				}
 			}
+			delay(1000)
 		}
 	}
 
 	fun loadBalance(table: TableModel<String>) = scope.launch(Dispatchers.IO) {
 		while (true) {
-			delay(1000)
 			val balance = api.clientBalance(client.id)
 			ui.invokeAndWait {
 				table.clear()
@@ -51,6 +50,7 @@ class MainModel(
 					)
 				}
 			}
+			delay(1000)
 		}
 	}
 
